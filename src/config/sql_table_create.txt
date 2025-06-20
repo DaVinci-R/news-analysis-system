@@ -1,0 +1,44 @@
+# 创建analysis_results数据表，用于储存经过LLM分析后的news
+CREATE TABLE `analysis_results` (
+   `id` int NOT NULL AUTO_INCREMENT,
+   `news_index` int DEFAULT NULL,
+   `date` date DEFAULT NULL,
+   `category` text,
+   `subcategory` text,
+   `is_market_relevant` int DEFAULT NULL,
+   `keywords` text,
+   `sentiment` float DEFAULT NULL,
+   `impact_markets` text,
+   `summary` text,
+   PRIMARY KEY (`id`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ # 创建news数据表，用于储存get_cls_news.py文件获取到的财联社新闻
+ CREATE TABLE `news` (
+   `id` int unsigned NOT NULL AUTO_INCREMENT,
+   `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+   `publish_date` date DEFAULT NULL,
+   `publish_time` time DEFAULT NULL,
+   `content_hash` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+   `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `hash` (`content_hash`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=192 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+ # 创建processed_hashes表，用于记录LLM分析的最后一条新闻纪录，保证不会重复分析
+ CREATE TABLE `processed_hashes` (
+   `id` int unsigned NOT NULL AUTO_INCREMENT,
+   `hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+   `processed_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`id`,`hash`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ # 创建summary表，用于记录LLM对各分类总结分析的结果
+ CREATE TABLE `summary` (
+   `id` int unsigned NOT NULL AUTO_INCREMENT,
+   `date` date DEFAULT NULL,
+   `category` text,
+   `summary` text,
+   PRIMARY KEY (`id`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
