@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # 数据层: 负责爬取新闻并存入数据库
+  data_layer:
+    build:
+      context: ..
+      dockerfile: docker/data_layer.Dockerfile
+    container_name: news_data_layer
+    volumes:
+      - ../data_layer/config.py:/app/data_layer/config.py
+    restart: always
+    networks:
+      - news_network
+
+  # LLM 主处理层: 负责结构化新闻
+  llm_layer_main:
+    build:
+      context: ..
+      dockerfile: docker/llm_layer_main.Dockerfile
+    container_name: news_llm_main
+    volumes:
+      - ../llm_layer/config.py:/app/llm_layer/config.py
+    restart: always
+    networks:
+      - news_network
+
+  # LLM 总结层: 负责生成分类总结
+  llm_layer_summary:
+    build:
+      context: ..
+      dockerfile: docker/llm_layer_summary.Dockerfile
+    container_name: news_llm_summary
+    volumes:
+      - ../llm_layer/config.py:/app/llm_layer/config.py
+    restart: always
+    networks:
+      - news_network
+
+  # 交互层: 提供 API 接口
+  interactive_layer:
+    build:
+      context: ..
+      dockerfile: docker/interactive_layer.Dockerfile
+    container_name: news_interactive_layer
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../interactive_layer/config.py:/app/interactive_layer/config.py
+    restart: always
+    networks:
+      - news_network
+
+  # 前端展示层: 提供 Web 界面
+  frontend_layer:
+    build:
+      context: ..
+      dockerfile: docker/frontend_layer.Dockerfile
+    container_name: news_frontend_layer
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../frontend_layer/config.py:/app/frontend_layer/config.py
+    restart: always
+    networks:
+      - news_network
+    depends_on:
+      - interactive_layer
+
+networks:
+  news_network:
+    driver: bridge
