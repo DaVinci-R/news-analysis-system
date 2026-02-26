@@ -79,7 +79,7 @@ docker-compose up -d
 
 2.  **分步启动**:
     - 启动数据层: `python -m data_layer.main`
-    - 启动 LLM 处理: `python -m llm_layer.main`
+    - 启动 LLM 处理: `python -m llm_layer.main` 和 `python -m llm_layer.summary_main`
     - 启动交互层: `python -m interactive_layer.main`
     - 启动前端: `python -m frontend_layer.main`
 
