@@ -1,71 +1,123 @@
 version: '3.8'
 
 services:
-  # 数据层: 负责爬取新闻并存入数据库
+  # 数据库服务
+  db_mysql:
+    image: mysql:8.0
+    container_name: news_mysql
+    env_file:
+      - ../.env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    # 为了安全，取消数据库端口的公网映射。
+    # 如果需要本地查看数据库，请通过 SSH 隧道连接。
+    # ports:
+    #   - "${DB_PORT}:3306"
+    volumes:
+      - news_db_data:/var/lib/mysql
+    restart: always
+    networks:
+      - news_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 数据层
   data_layer:
     build:
       context: ..
       dockerfile: docker/data_layer.Dockerfile
     container_name: news_data_layer
-    volumes:
-      - ../data_layer/config.py:/app/data_layer/config.py
+    env_file:
+      - ../.env
     restart: always
     networks:
       - news_network
+    depends_on:
+      db_mysql:
+        condition: service_healthy
 
-  # LLM 主处理层: 负责结构化新闻
+  # LLM 主处理层
   llm_layer_main:
     build:
       context: ..
       dockerfile: docker/llm_layer_main.Dockerfile
     container_name: news_llm_main
-    volumes:
-      - ../llm_layer/config.py:/app/llm_layer/config.py
+    env_file:
+      - ../.env
     restart: always
     networks:
       - news_network
+    depends_on:
+      db_mysql:
+        condition: service_healthy
 
-  # LLM 总结层: 负责生成分类总结
+  # LLM 总结层
   llm_layer_summary:
     build:
       context: ..
       dockerfile: docker/llm_layer_summary.Dockerfile
     container_name: news_llm_summary
-    volumes:
-      - ../llm_layer/config.py:/app/llm_layer/config.py
+    env_file:
+      - ../.env
     restart: always
     networks:
       - news_network
+    depends_on:
+      db_mysql:
+        condition: service_healthy
 
-  # 交互层: 提供 API 接口
+  # 交互层
   interactive_layer:
     build:
       context: ..
       dockerfile: docker/interactive_layer.Dockerfile
     container_name: news_interactive_layer
-    ports:
-      - "8001:8001"
-    volumes:
-      - ../interactive_layer/config.py:/app/interactive_layer/config.py
+    env_file:
+      - ../.env
     restart: always
     networks:
       - news_network
+    depends_on:
+      db_mysql:
+        condition: service_healthy
 
-  # 前端展示层: 提供 Web 界面
+  # 前端展示层
   frontend_layer:
     build:
       context: ..
       dockerfile: docker/frontend_layer.Dockerfile
     container_name: news_frontend_layer
-    ports:
-      - "8501:8501"
-    volumes:
-      - ../frontend_layer/config.py:/app/frontend_layer/config.py
+    env_file:
+      - ../.env
     restart: always
     networks:
       - news_network
     depends_on:
       - interactive_layer
+      - db_mysql
+
+  # Nginx 反向代理
+  nginx_proxy:
+    image: nginx:alpine
+    container_name: news_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - news_network
+    depends_on:
+      - frontend_layer
+      - interactive_layer
+
+volumes:
+  news_db_data:
+
 
 networks:
   news_network:

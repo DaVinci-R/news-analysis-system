@@ -1,17 +1,20 @@
+import os
+
 # 前端展示层配置
 WEB_HOST = "0.0.0.0"
 WEB_PORT = 8501
 
-DB_HOST = "localhost"
-DB_PORT = 3306
-DB_USER = "root"
-DB_PASSWORD = "yourpassword"
-DB_NAME = "news_analysis"
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = int(os.getenv("DB_PORT", 3306))
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "yourpassword")
+DB_NAME = os.getenv("DB_NAME", "news_analysis")
 TABLE_NAME = "all_news"
 SUMMARY_TABLE = "news_summary"
+
 # 交互层 API 配置
-INTERACTIVE_API_HOST = "localhost" # 如果想实现同一局域网内访问，需要将该url改成后端所在主机的IP地址
-INTERACTIVE_API_PORT = 8001
+INTERACTIVE_API_HOST = os.getenv("INTERACTIVE_API_HOST", "localhost")
+INTERACTIVE_API_PORT = int(os.getenv("INTERACTIVE_API_PORT", 8001))
 INTERACTIVE_CHAT_PATH = "/chat"
 INTERACTIVE_API_URL = f"http://{INTERACTIVE_API_HOST}:{INTERACTIVE_API_PORT}{INTERACTIVE_CHAT_PATH}"
 
