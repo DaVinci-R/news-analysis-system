@@ -21,10 +21,10 @@ CONCURRENCY = int(os.getenv("CONCURRENCY", 2))
 PROCESS_INTERVAL = int(os.getenv("PROCESS_INTERVAL", 600))
 
 # --- 分类总结配置 ---
-SUMMARY_TRIGGER_MODE = os.getenv("SUMMARY_TRIGGER_MODE", "fixed")
-SUMMARY_FIXED_TIME = os.getenv("SUMMARY_FIXED_TIME", "00:01")
-SUMMARY_INTERVAL = int(os.getenv("SUMMARY_INTERVAL", 3600))
-SUMMARY_DEFAULT_WINDOW_HOURS = int(os.getenv("SUMMARY_DEFAULT_WINDOW_HOURS", 24))
+SUMMARY_TRIGGER_MODE = os.getenv("SUMMARY_TRIGGER_MODE", "fixed")  # 控制触发模式 fixed | interval
+SUMMARY_FIXED_TIME = os.getenv("SUMMARY_FIXED_TIME", "00:01")  # 定点执行时间
+SUMMARY_INTERVAL = int(os.getenv("SUMMARY_INTERVAL", 3600))  # 间隔执行时间
+SUMMARY_DEFAULT_WINDOW_HOURS = int(os.getenv("SUMMARY_DEFAULT_WINDOW_HOURS", 24))  # 默认窗口时间
 SUMMARY_CUSTOM_WINDOW = None 
 
 # 资产大类列表 (固定)

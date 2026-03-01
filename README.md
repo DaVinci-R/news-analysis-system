@@ -87,11 +87,52 @@ docker-compose up -d
 
 ## ⚙️ 配置说明
 
-每个层级下都有各自的 `config.py`。
-- 在 **Docker 部署** 模式下，项目会自动将宿主机的 `config.py` 挂载到容器内部。
-- 修改本地配置文件后，只需重启对应容器即可生效：
+系统采用环境变量与配置文件结合的方式进行管理。在 Docker 部署中，主要通过项目根目录下的 `.env` 文件进行统一配置。
+
+### 1. 统一环境配置 (.env)
+
+| 变量名 | 说明 | 示例值 |
+| :--- | :--- | :--- |
+| `DB_HOST` | 数据库地址（Docker 模式下为 `db_mysql`） | `db_mysql` |
+| `DB_PASSWORD` | MySQL root 密码 | `yourpassword` |
+| `ONLINE_API_KEY` | 大模型 API Key | `sk-xxxx` |
+| `ONLINE_BASE_URL`| 大模型 API 基础路径 | `https://api.deepseek.com` |
+| `ONLINE_MODEL` | 使用的模型名称 | `deepseek-chat` |
+
+### 2. 各层级详细参数
+
+#### 📊 数据层 (Data Layer)
+- `SPIDER_INTERVAL`: 新闻爬取的时间间隔（秒），默认 `60`。
+
+#### 🧠 LLM 处理层 (LLM Layer)
+- `BATCH_SIZE`: 主处理模块单次从数据库读取并处理的新闻条数。
+- `CONCURRENCY`: 并发处理的线程/协程数量。
+- `PROCESS_INTERVAL`: 轮询未处理新闻的间隔时间（秒）。
+- **分类总结配置 (Summary)**:
+    - `SUMMARY_TRIGGER_MODE`: 触发模式，可选 `fixed` (定点) 或 `interval` (间隔)。
+    - `SUMMARY_FIXED_TIME`: 定点触发的时间点（如 `08:30`）。
+    - `SUMMARY_INTERVAL`: 间隔模式下的循环时间（秒）。
+    - `SUMMARY_DEFAULT_WINDOW_HOURS`: 总结任务向前回溯的时间范围（小时）。
+
+#### 💬 交互层 (Interactive Layer)
+- `API_PORT`: 后端 API 服务端口，默认 `8001`。
+- `DEFAULT_MODEL_NAME`: 智能问答默认调用的模型。
+
+#### 🎨 前端展示层 (Frontend Layer)
+- `INTERACTIVE_API_HOST`: 交互层服务的地址（Docker 模式下为 `interactive_layer`）。
+- `WEB_PORT`: Streamlit 服务运行端口，默认 `8501`。
+
+---
+
+## 🛠️ 运维与调试
+
+- **查看日志**: 
   ```bash
-  docker-compose restart [service_name]
+  docker-compose logs -f [service_name]
+  ```
+- **配置生效**: 修改 `.env` 后，建议重新启动服务：
+  ```bash
+  docker-compose up -d
   ```
 
 ---
